@@ -10,24 +10,29 @@
     <style>
         body
         {
-            background-color: rgb(236, 223, 206);
+            background-color: rgb(206, 236, 231);
+            font-family: sans-serif;
+            overflow: hidden;
         }
 
         #face
         {
             position: absolute;
             image-rendering: pixelated;
-            scale: 3;
-            transition: 0.1s;
+            scale: 5;
+            transition: linear 0.1s;
+            transform: translate(-5px, 19px);
         }
 
         .hair
         {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            position: absolute;
-            transition: 0.12s;
+            position: relative;
+            display: block;
+            image-rendering: pixelated;
+            scale: 5;
+            margin-top: -8.2px;
+            transform: translate(-6.59px, -20px);
+            z-index: -1;
         }
     </style>
 
@@ -35,48 +40,139 @@
 
 
 <body>
-    
+    <button onclick="AddHair()">Add Hair</button>
+    <button onclick="RemoveHair()">Remove Hair</button>
+    <p>Smoothness</p>
+    <input type="range" min="1" max="10" value="4" id="smoothness" onchange="Smooth()">
+    <h4 id="direction">TOP</h4>
+
     <div id="face">
-        <img src="/Face2.png" alt="face">
+        <img id="face-img" src="/sprite_0.png">
     </div>
-
-
-    <div class="hair"></div>
-    <div class="hair" style="transition: 0.13s;"></div>
-    <div class="hair" style="transition: 0.14s;"></div>
-
 </body>
 
 
 <script>
+    
+    // Generate some Hair
+    for (let h=0; h<7; h++)
+    {
+        AddHair();
+    }
+
+
+    var EXposX = 0;
+    var EXposY = 0;
 
     document.onmousemove = function(e) 
-    {
+    {     
         const Face = document.getElementById("face");
-        const Hair = document.getElementsByClassName("hair");
+        const FaceImg = document.getElementById("face-img");
+        const Hairs = document.getElementsByClassName("hair");
+        const DirectionP = document.getElementById("direction");
+        const Xpos = e.clientX.toString()+"px";
+        const Ypos = e.clientY.toString()+"px";
 
-        Face.style.left = e.clientX.toString()+"px";
-        Face.style.top = e.clientY.toString()+"px";
+        Face.style.left = Xpos;
+        Face.style.top = Ypos;
 
-        for (let i = 0; i < Hair.length; i++) 
+        for (let i = 0; i < Hairs.length; i++) 
         {
-            if (i == 0)
+            Hairs[i].style.left = Xpos;
+            Hairs[i].style.top = Ypos;
+        }
+
+        // Direction
+
+        // Vertical OR Horizontal
+        if (Math.abs((Math.abs(EXposX-e.clientX)) - (Math.abs(EXposY-e.clientY))) < 4) 
+        {
+            FaceImg.src="sprite_0.png";
+            DirectionP.innerText = "CENTER";
+        }
+        else if ((Math.abs(EXposX-e.clientX)) > (Math.abs(EXposY-e.clientY)))
+        {
+            //Horizontal
+            //Left or Right
+            if ((EXposX-e.clientX) > 0)
             {
-                Hair[i].style.left = Face.style.left;
-                Hair[i].style.top = Face.style.top;
+                //LEFT
+                FaceImg.src="sprite_2.png";
+                DirectionP.innerText = "LEFT";
             }
             else
             {
-                Hair[i].style.left = Hair[i-1].style.left;
-                Hair[i].style.top = Hair[i-1].style.top;
+                //RIGHT
+                FaceImg.src="sprite_3.png";
+                DirectionP.innerText = "RIGHT";
             }
+        }
+        else
+        {
+            //Vertical
+            //Top or Bot
+            if ((EXposY-e.clientY) > 0)
+            {
+                //TOP
+                FaceImg.src="sprite_5.png";
+                DirectionP.innerText = "TOP";
+            }
+            else
+            {
+                //BOT
+                FaceImg.src="sprite_4.png";
+                DirectionP.innerText = "BOT";
+            }
+        }
+
+        EXposX = e.clientX;
+        EXposY = e.clientY;
+    }
+
+    function AddHair() 
+    {
+        const NewHair = document.createElement("img");
+        const HairsCount = document.getElementsByClassName("hair").length;
+
+        NewHair.setAttribute("class", "hair");
+        NewHair.setAttribute("src", "./sprite_1.png");
+        NewHair.setAttribute("id", HairsCount.toString());
+        NewHair.setAttribute("style", "transition: linear " + ((HairsCount*0.4+10.2)/100).toString() + "s");
+
+        document.body.appendChild(NewHair);
+        
+        SyncHairs();
+    }
+
+    function RemoveHair() 
+    {
+        const Hairs = document.getElementsByClassName("hair");
+
+        Hairs[Hairs.length - 1].remove();
+    }
+
+    function SyncHairs() 
+    {
+        const Face = document.getElementById("face");
+        const Hairs = document.getElementsByClassName("hair");
+
+        for (let i = 0; i < Hairs.length; i++) 
+        {
+            Hairs[i].style.left = Face.style.left;
+            Hairs[i].style.top = Face.style.top;
         }
     }
 
-    setInterval(() => 
+    function Smooth() 
     {
-        
-    }, 100);
+        const Smoothness = document.getElementById("smoothness");
+        const Hairs = document.getElementsByClassName("hair");
+
+        for (let i = 0; i < Hairs.length; i++) 
+        {
+            Hairs[i].style.transition = "linear " + ((i*(Smoothness.value/10)+10.2)/100).toString() + "s";
+        }
+    }
 
 </script>
 
